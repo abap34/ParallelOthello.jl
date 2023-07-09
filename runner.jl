@@ -54,7 +54,7 @@ function start(solver1, solver2)
 end
 
 
-solver1 = RandomSolver()
-solver2 = RandomSolver()
+solver1 = FirstChoice()
+solver2 = FirstChoice()
 
 start(solver1, solver2)
