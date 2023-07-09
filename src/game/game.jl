@@ -10,7 +10,6 @@ mutable struct Game
     opponetboard::UInt64
     state::Int8
     turn::Int8
-    finish::Bool
     function Game(; size=(8, 8))
         playerboard = zeros(Int8, size)
 
@@ -27,12 +26,13 @@ mutable struct Game
         playerboard = encode(playerboard)
         opponetboard = encode(opponetboard)
 
+        println("Initialize with:")
         println(bitstring(playerboard))
         println(bitstring(opponetboard))
         state = 0
         turn = 1
-        finish = false
-        return new(playerboard, opponetboard, state, turn, finish)
+
+        return new(playerboard, opponetboard, state, turn)
     end
 end
 
@@ -102,7 +102,28 @@ function display(game::Game)
 end
 
 function isfinish(game::Game)::Bool
-    return game.finish
+    # filled 
+    if ~(game.playerboard | game.opponetboard) == 0b0
+        player_count = count_ones(game.playerboard)
+        opponet_count = count_ones(game.opponetboard)
+        if player_count > opponet_count
+            game.state = 1
+        elseif player_count < opponet_count
+            game.state = -1
+        else
+            game.state = 0
+        end
+       return true
+    end
+    
+    if game.playerboard == 0b0
+        game.state = -1
+        return true
+    elseif game.opponetboard == 0b0
+        game.state = 1
+        return true
+    end
+    return false
 end
 
 function iswin(game::Game)::Bool
@@ -140,21 +161,25 @@ end
 
 
 function put!(game::Game, row::Int, col::Int)
-    ind = 8 * (col - 1) + row
+    ind = TOP_BIT >> (8 * (col - 1) + row - 1)
+    put!(game, ind)
+end
+
+function put!(game::Game, ind::UInt64)
     if game.turn == 1
-        if islegal(TOP_BIT >> (ind - 1), game.playerboard, game.opponetboard)
-            game.playerboard |= TOP_BIT >> (ind - 1)
+        if islegal(ind, game.playerboard, game.opponetboard)
+            game.playerboard |= ind
         else
             throw(DomainError("Illegal cell"))
         end
     else
-        if islegal(TOP_BIT >> (ind - 1), game.opponetboard, game.playerboard)
-            game.opponetboard |= TOP_BIT >> (ind - 1)
+        if islegal(ind, game.opponetboard, game.playerboard)
+            game.opponetboard |= ind
         else
             throw(DomainError("Illegal cell"))
         end
     end
-    reverse!(game, TOP_BIT >> (ind - 1))
+    reverse!(game, ind)
     return true
 end
 

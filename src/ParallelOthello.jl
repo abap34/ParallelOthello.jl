@@ -1,6 +1,8 @@
-include("game.jl")
-include("judge.jl")
 
+include("game/game.jl")
+include("game/judge.jl")
+
+include("solvers/solvers.jl")
 
 function start()
     game = Game()
@@ -20,6 +22,3 @@ function start()
     println("winner is ", black)
 end
 
-
-
-start()

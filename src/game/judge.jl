@@ -32,25 +32,45 @@ function trim(board, direction)
     @assert direction in ALL_DIRECTION
     if direction == "up"
         board &= NOT_TOP_ROW_MASK
+        board &= NOT_BOTTOM_ROW_MASK
+
     elseif direction == "down"
+        board &= NOT_TOP_ROW_MASK
         board &= NOT_BOTTOM_ROW_MASK
 
     elseif direction == "right"
         board &= NOT_RIGHT_COL_MASK
+        board &= NOT_LEFT_COL_MASK
+
 
     elseif direction == "left"
+        board &= NOT_RIGHT_COL_MASK
         board &= NOT_LEFT_COL_MASK
 
     elseif direction == "upright"
+        board &= NOT_TOP_ROW_MASK
+        board &= NOT_BOTTOM_ROW_MASK
         board &= NOT_RIGHT_COL_MASK
+        board &= NOT_LEFT_COL_MASK
+
+
 
     elseif direction == "downright"
+        board &= NOT_TOP_ROW_MASK
+        board &= NOT_BOTTOM_ROW_MASK
         board &= NOT_RIGHT_COL_MASK
+        board &= NOT_LEFT_COL_MASK
 
     elseif direction == "upleft"
+        board &= NOT_TOP_ROW_MASK
+        board &= NOT_BOTTOM_ROW_MASK
+        board &= NOT_RIGHT_COL_MASK
         board &= NOT_LEFT_COL_MASK
 
     elseif direction == "downleft"
+        board &= NOT_TOP_ROW_MASK
+        board &= NOT_BOTTOM_ROW_MASK
+        board &= NOT_RIGHT_COL_MASK
         board &= NOT_LEFT_COL_MASK
     end
     return board
