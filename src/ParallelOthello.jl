@@ -4,6 +4,9 @@ include("game/judge.jl")
 
 include("solvers/solvers.jl")
 
+
+const BIT_LEN = 64
+
 function start()
     game = Game()
     display(game)

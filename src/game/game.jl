@@ -1,7 +1,7 @@
 using PrettyTables
 
 
-const ZERO::UInt64 = 0b0
+const ZERO::UInt64 = 0x0
 const TOP_BIT::UInt64 = 0b1000000000000000000000000000000000000000000000000000000000000000
 
 
@@ -26,9 +26,6 @@ mutable struct Game
         playerboard = encode(playerboard)
         opponetboard = encode(opponetboard)
 
-        println("Initialize with:")
-        println(bitstring(playerboard))
-        println(bitstring(opponetboard))
         state = 0
         turn = 1
 
@@ -38,7 +35,7 @@ end
 
 
 function encode(board::AbstractArray)
-    s::UInt64 = 0b0
+    s::UInt64 = 0x0
     for (i, v) in enumerate(board)
         if v == 1
             s |= TOP_BIT >> (i - 1)
@@ -70,7 +67,7 @@ end
 
 function islegal(position::UInt64, board1::UInt64, board2::UInt64)
     legal_mask = legal(board1, board2)
-    return !((position & legal_mask) == 0b0)
+    return !((position & legal_mask) == 0x0)
 end
 
 
@@ -102,8 +99,7 @@ function display(game::Game)
 end
 
 function isfinish(game::Game)::Bool
-    # filled 
-    if ~(game.playerboard | game.opponetboard) == 0b0
+    if ~(game.playerboard | game.opponetboard) == 0x0
         player_count = count_ones(game.playerboard)
         opponet_count = count_ones(game.opponetboard)
         if player_count > opponet_count
@@ -113,16 +109,22 @@ function isfinish(game::Game)::Bool
         else
             game.state = 0
         end
-       return true
+        return true
     end
-    
-    if game.playerboard == 0b0
+
+
+    if game.playerboard == 0x0
         game.state = -1
         return true
-    elseif game.opponetboard == 0b0
+    elseif game.opponetboard == 0x0
         game.state = 1
         return true
     end
+
+    if legal(game.playerboard, game.opponetboard) == legal(game.opponetboard, game.playerboard) == 0x0
+        return true
+    end
+
     return false
 end
 
@@ -167,38 +169,30 @@ end
 
 function put!(game::Game, ind::UInt64)
     if game.turn == 1
-        if islegal(ind, game.playerboard, game.opponetboard)
-            game.playerboard |= ind
-        else
-            throw(DomainError("Illegal cell"))
-        end
+        game.playerboard, game.opponetboard = put(game.playerboard, game.opponetboard, ind)
     else
-        if islegal(ind, game.opponetboard, game.playerboard)
-            game.opponetboard |= ind
-        else
-            throw(DomainError("Illegal cell"))
-        end
+        game.opponetboard, game.playerboard = put(game.opponetboard, game.playerboard, ind)
     end
-    reverse!(game, ind)
-    return true
 end
 
-function reverse!(game::Game, ind::UInt64)
-    mask::UInt64 = 0x0
-    if game.turn == 1
-        for direction in ALL_DIRECTION
-            mask |= reverse_eachdirection(ind, game.playerboard, game.opponetboard, direction)
-        end
-
-        game.playerboard |= mask
-        game.opponetboard = game.opponetboard ⊻ mask
+function put(board1::UInt64, board2::UInt64, ind::UInt64)
+    if islegal(ind, board1, board2)
+        board1 |= ind
     else
-        for direction in ALL_DIRECTION
-            mask |= reverse_eachdirection(ind, game.opponetboard, game.playerboard, direction) 
-        end
-        game.opponetboard |= mask
-        game.playerboard = game.playerboard ⊻ mask
+        throw(DomainError("Illegal cell"))
     end
+    board1, board2 = reverse(board1, board2, ind)
+    return board1, board2
+end
+
+function reverse(board1::UInt64, board2::UInt64, ind::UInt64)
+    mask::UInt64 = 0x0
+    for direction in ALL_DIRECTION
+        mask |= reverse_eachdirection(ind, board1, board2, direction)
+    end
+    board1 |= mask
+    board2 = board2 ⊻ mask
+    return board1, board2
 end
 
 

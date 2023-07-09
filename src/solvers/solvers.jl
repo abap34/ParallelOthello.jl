@@ -1,5 +1,9 @@
+import StatsBase
+
+
 abstract type AbstractSolver end
 
-
-include("minmax.jl")
+include("utils.jl")
 include("random.jl")
+include("firstchoice.jl")
+include("minmax.jl")

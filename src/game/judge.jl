@@ -94,11 +94,11 @@ function reverse_eachdirection(ind::UInt64, board1::UInt64, board2::UInt64, dire
     for _ in 1:6
         mask |= board2 & (mask >> n_shift)
     end
-    if ((mask >> n_shift) & board1 != 0b0)
+    if ((mask >> n_shift) & board1 != 0x0)
         return mask & board2
     else
-        return 0b0
-    end 
+        return 0x0
+    end
 end
 
 
