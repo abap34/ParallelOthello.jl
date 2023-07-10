@@ -13,7 +13,10 @@ function start(solver1, solver2; verbose=true)
         println("Start")
         display(game)
     end
+    turn = 0
     while !(isfinish(game))
+        turn += 1
+        (verbose) && (println("====== Turn $turn ======"))
         (verbose) && readline()
         try
             if game.turn == 1
@@ -47,8 +50,8 @@ function start(solver1, solver2; verbose=true)
             println("invalid value: $e")
             continue
         else
-            next!(game)
             (verbose) && (display(game))
+            next!(game)
         end
     end
     black_count = count_ones(game.playerboard)
@@ -73,9 +76,7 @@ function start(solver1, solver2; verbose=true)
 end
 
 
-function main()
-    solver1 = RandomChoice()
-    solver2 = MinMax(3)
+function battle(solver1, solver2)
 
     N = 10^2
 
@@ -97,3 +98,22 @@ function main()
 end
 
 
+function check()
+    println("choice check")
+    solver1 = RandomChoice()
+    solver2 = ParallelMinMax(3, 8)
+    game = Game()
+    res = choice(solver2, game.playerboard, game.opponetboard, legal(game.playerboard, game.opponetboard))
+    println("choice:", res)
+    println("game check")
+    start(solver1, solver2)
+end
+
+
+function bench()
+    solvers = (MinMax(2), MinMax(2))
+    @time battle(solvers...)
+
+    solvers = (ParallelMinMax(2, 8), ParallelMinMax(2, 8))
+    @time battle(solvers...)
+end

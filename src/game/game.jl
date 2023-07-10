@@ -86,7 +86,7 @@ function display(game::Game)
     opponet_decodedboard = decode(game.opponetboard)
 
     board = player_decodedboard .+ (opponet_decodedboard .* -1)
-    turn = "ターン:" * (game.turn == 1 ? "黒" : "白")
+    turn =  (game.turn == 1 ? "黒" : "白") * "の着手結果"
 
     if game.turn == 1
         legal_mask = decode(legal(game.playerboard, game.opponetboard))
@@ -99,33 +99,42 @@ function display(game::Game)
 end
 
 function isfinish(game::Game)::Bool
-    if ~(game.playerboard | game.opponetboard) == 0x0
-        player_count = count_ones(game.playerboard)
-        opponet_count = count_ones(game.opponetboard)
+    res, state = isfinish(game.playerboard, game.opponetboard)
+    game.state = state
+    return res
+end
+
+
+function isfinish(board1::UInt64, board2::UInt64) :: Tuple{Bool, Int}
+    if ~(board1 | board2) == 0x0
+        player_count = count_ones(board1)
+        opponet_count = count_ones(board2)
         if player_count > opponet_count
-            game.state = 1
+            state = 1
         elseif player_count < opponet_count
-            game.state = -1
+            state = -1
         else
-            game.state = 0
+            state = 0
         end
-        return true
+        return true, state
     end
 
 
-    if game.playerboard == 0x0
-        game.state = -1
-        return true
-    elseif game.opponetboard == 0x0
-        game.state = 1
-        return true
+    if board1 == 0x0
+        state = -1
+        return true, state
+    elseif board2 == 0x0
+        state = 1
+        return true, state
     end
 
-    if legal(game.playerboard, game.opponetboard) == legal(game.opponetboard, game.playerboard) == 0x0
-        return true
+    if legal(board1, board2) == legal(board2, board1) == 0x0
+        state = 0
+        return true, state
     end
 
-    return false
+    state = 0
+    return false, state
 end
 
 function iswin(game::Game)::Bool
@@ -179,7 +188,7 @@ function put(board1::UInt64, board2::UInt64, ind::UInt64)
     if islegal(ind, board1, board2)
         board1 |= ind
     else
-        throw(DomainError("Illegal cell"))
+        throw(DomainError("Illegal cell $(bitstring(ind)) $(bit_to_position(ind))"))
     end
     board1, board2 = reverse(board1, board2, ind)
     return board1, board2
