@@ -194,7 +194,7 @@ function put(board1::UInt64, board2::UInt64, ind::UInt64)
     return board1, board2
 end
 
-function reverse(board1::UInt64, board2::UInt64, ind::UInt64)
+function reverse(board1::UInt64, board2::UInt64, ind::UInt64) :: Tuple{UInt64, UInt64}
     mask::UInt64 = 0x0
     for direction in ALL_DIRECTION
         mask |= reverse_eachdirection(ind, board1, board2, direction)

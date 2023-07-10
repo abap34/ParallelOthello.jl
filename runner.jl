@@ -77,15 +77,17 @@ function start(solver1, solver2; verbose=true)
 end
 
 
-function battle(solver1, solver2)
-
-    N = 10^2
-
+function battle(solver1, solver2; verbose=false, N=256)
     black_win = 0
     white_win = 0
     even = 0
+    if verbose
+        r = ProgressBar(1:N)
+    else
+        r = 1:N
+    end
 
-    for _ in ProgressBar(1:N)
+    for _ in r
         res, _, _ = start(solver1, solver2, verbose=false)
         if res == 1
             black_win += 1
@@ -95,14 +97,14 @@ function battle(solver1, solver2)
             even += 1
         end
     end
-    barplot(["黒 $(solver1)", "白 $(solver2)", "引き分け"], [black_win, white_win, even], title="結果")
+    barplot(["$(solver1)", "$(solver2)", "Draw"], [black_win, white_win, even], title="Result")
 end
 
 
 function check()
     println("choice check")
-    solver1 = MinMax(4)
-    solver2 = ParallelMinMax(4, 8)
+    solver1 = MinMax(3)
+    solver2 = AlphaBeta(3)
     game = Game()
     res = choice(solver2, game.playerboard, game.opponetboard, legal(game.playerboard, game.opponetboard))
     println("choice:", res)
@@ -112,8 +114,11 @@ end
 
 
 function bench()
-    solvers = (MinMax(2), MinMax(3))
-    @time battle(solvers...)
+    solvers = (AlphaBeta(4), AlphaBeta(4))
+    @time battle(solvers..., verbose=true, N=10)
+
+    solvers = (MinMax(4), MinMax(4))
+    @time battle(solvers..., verbose=true, N=10)
 
     solvers = (ParallelMinMax(2, 8), ParallelMinMax(2, 8))
     @time battle(solvers...)

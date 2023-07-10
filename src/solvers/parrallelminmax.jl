@@ -32,21 +32,19 @@ function build_score_function(depth, board1, board2, max_depth)
 end
 
 function paralellminmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int) :: Int
-    turn = depth % 2
     if depth == max_depth
-        if turn == 1
-            return count_ones(board1) - count_ones(board2)
-        else
-            return count_ones(board2) - count_ones(board1)
-        end 
+        return count_ones(board1) - count_ones(board2)
     end
+
+    turn = depth % 2
+    
 
     score = 100000000000
 
+    if isfinish(board1, board2)[1]
+        return count_ones(board2) - count_ones(board1)
+    end
     if turn == 1
-        if isfinish(board1, board2)[1]
-            return count_ones(board1) - count_ones(board2)
-        end
         _legals = legal(board1, board2)
         # pass
         if _legals == 0x0
@@ -59,9 +57,6 @@ function paralellminmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::I
             return score
         end
     else
-        if isfinish(board1, board2)[1]
-            return count_ones(board1) - count_ones(board2)
-        end
         _legals = legal(board2, board1)
         # pass
         if _legals == 0x0
