@@ -5,12 +5,18 @@ end
 function choice(solver::MinMax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
     max_depth = solver.max_depth
     cand = LegalCand(legals)
-    scores = Tuple{UInt64, Int}[]
-    for legal in cand
-        push!(scores, (legal, -minmax(1, put(board1, board2, legal)..., max_depth)))
+    scores = zeros(Int, length(cand))
+    hands = zeros(UInt64, length(cand))
+    for (i, legal) in enumerate(cand)
+        scores[i] = -minmax(1, put(board1, board2, legal)..., max_depth)
+        hands[i] = legal
     end
-    sort!(scores, by=x->x[2], rev=true)
-    return scores[1][1]
+    res = choice_maximum(scores, hands)
+    if res == 0x0
+        throw(DomainError("zero choice. \n hands:$hands, \n scores:$scores"))
+    else
+        return res
+    end
 end
 
 function minmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int)

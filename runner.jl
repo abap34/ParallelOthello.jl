@@ -47,7 +47,8 @@ function start(solver1, solver2; verbose=true)
                 end
             end
         catch e
-            println("invalid value: $e")
+            println("invalid value:")
+            throw(e)
             continue
         else
             (verbose) && (display(game))
@@ -100,8 +101,8 @@ end
 
 function check()
     println("choice check")
-    solver1 = RandomChoice()
-    solver2 = ParallelMinMax(3, 8)
+    solver1 = MinMax(4)
+    solver2 = ParallelMinMax(4, 8)
     game = Game()
     res = choice(solver2, game.playerboard, game.opponetboard, legal(game.playerboard, game.opponetboard))
     println("choice:", res)
@@ -111,7 +112,7 @@ end
 
 
 function bench()
-    solvers = (MinMax(2), MinMax(2))
+    solvers = (MinMax(2), MinMax(3))
     @time battle(solvers...)
 
     solvers = (ParallelMinMax(2, 8), ParallelMinMax(2, 8))
