@@ -63,8 +63,10 @@ function paralellminmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::I
             return -paralellminmax(depth + 1, board1, board2, max_depth)
         else
             cand = LegalCand(_legals)
-            calc = build_score_function(depth, board2, board1, max_depth)
-            return minimum(map(calc, cand))
+            for legal in cand
+                score = min(score, -minmax(depth + 1, put(board2, board1, legal)..., max_depth))
+            end
+            return score
         end
     end
 end
