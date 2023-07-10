@@ -1,5 +1,5 @@
-struct MinMax <: AbstractSolver 
-    max_depth :: Int
+struct MinMax <: AbstractSolver
+    max_depth::Int
 end
 
 function choice(solver::MinMax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
@@ -27,12 +27,12 @@ function minmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int)
             return count_ones(board1) - count_ones(board2)
         else
             return count_ones(board2) - count_ones(board1)
-        end 
+        end
     end
 
     score = 100000000000
 
-    
+
     if turn == 1
         if isfinish(board1, board2)[1]
             return count_ones(board1) - count_ones(board2)

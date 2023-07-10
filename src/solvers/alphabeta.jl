@@ -1,5 +1,5 @@
-struct AlphaBeta <: AbstractSolver 
-    max_depth :: Int
+struct AlphaBeta <: AbstractSolver
+    max_depth::Int
 end
 
 function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
@@ -8,7 +8,7 @@ function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt6
     scores = zeros(Int, length(cand))
     hands = zeros(UInt64, length(cand))
     best_score = -100000
-    alpha = -100000 
+    alpha = -100000
     for (i, legal) in enumerate(cand)
         score = -alpha_beta(1, put(board1, board2, legal)..., alpha, -alpha, max_depth)
         scores[i] = score
@@ -34,7 +34,7 @@ function alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::Int, beta
             return count_ones(board1) - count_ones(board2)
         else
             return count_ones(board2) - count_ones(board1)
-        end 
+        end
     end
 
     if turn == 1

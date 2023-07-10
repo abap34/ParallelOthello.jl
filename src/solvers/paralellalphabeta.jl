@@ -1,5 +1,5 @@
-struct ParallelAlphaBeta <: AbstractSolver 
-    max_depth :: Int
+struct ParallelAlphaBeta <: AbstractSolver
+    max_depth::Int
 end
 
 function choice(solver::ParallelAlphaBeta, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
@@ -8,7 +8,7 @@ function choice(solver::ParallelAlphaBeta, board1::UInt64, board2::UInt64, legal
     scores = zeros(Int, length(cand))
     hands = zeros(UInt64, length(cand))
     best_score = -100000
-    alpha = -100000 
+    alpha = -100000
     for (i, legal) in enumerate(cand)
         score = -parallel_alpha_beta(1, put(board1, board2, legal)..., alpha, -alpha, max_depth)
         scores[i] = score
@@ -34,7 +34,7 @@ function parallel_alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::
             return count_ones(board1) - count_ones(board2)
         else
             return count_ones(board2) - count_ones(board1)
-        end 
+        end
     end
 
     if turn == 1
@@ -78,14 +78,14 @@ function parallel_alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::
                 Threads.@threads for legal in cand
                     beta = min(beta, -parallel_alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
                     if beta <= alpha
-                        break 
+                        break
                     end
                 end
             else
                 for legal in cand
                     beta = min(beta, -parallel_alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
                     if beta <= alpha
-                        break 
+                        break
                     end
                 end
             end

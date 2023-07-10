@@ -9,7 +9,7 @@ end
 function bit_to_position(bits::UInt64)
     ind = leading_zeros(bits) + 1
     row = (ind - 1) % 8 + 1
-    col = ('a':'h')[(ind - 1) ÷ 8 + 1]
+    col = ('a':'h')[(ind-1)÷8+1]
     return row, col
 end
 
@@ -55,7 +55,7 @@ function Base.iterate(cand::Base.Iterators.Enumerate{LegalCand})
 end
 
 
-function Base.iterate(cand::Base.Iterators.Enumerate{LegalCand}, prev::Tuple{Int, UInt64})
+function Base.iterate(cand::Base.Iterators.Enumerate{LegalCand}, prev::Tuple{Int,UInt64})
     cand.itr.legals = cand.itr.legals ⊻ prev[2]
     new = (prev[1] + 1, trim_after(cand.itr.legals))
     if new[2] == 0x0
