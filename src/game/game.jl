@@ -86,7 +86,6 @@ function display(game::Game)
     opponet_decodedboard = decode(game.opponetboard)
 
     board = player_decodedboard .+ (opponet_decodedboard .* -1)
-    turn =  (game.turn == 1 ? "黒" : "白") * "の着手結果"
 
     if game.turn == 1
         legal_mask = decode(legal(game.playerboard, game.opponetboard))
@@ -95,7 +94,7 @@ function display(game::Game)
     end
     board = board .+ legal_mask .* 2
 
-    pretty_table(board, body_hlines=collect(1:8), header='a':'h', row_labels=collect(1:8), formatters=formatter, title=turn)
+    pretty_table(board, body_hlines=collect(1:8), header='a':'h', row_labels=collect(1:8), formatters=formatter)
 end
 
 function isfinish(game::Game)::Bool

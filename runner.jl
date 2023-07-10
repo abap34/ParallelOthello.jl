@@ -7,7 +7,7 @@ Random.seed!(34)
 include("src/ParallelOthello.jl")
 
 
-function start(solver1, solver2; verbose=true)
+function start_game(solver1, solver2; verbose=true)
     game = Game()
     if verbose
         println("Start")
@@ -16,11 +16,18 @@ function start(solver1, solver2; verbose=true)
     turn = 0
     while !(isfinish(game))
         turn += 1
-        (verbose) && (println("====== Turn $turn ======"))
-        (verbose) && readline()
+        if verbose 
+            println("====== Turn $turn ======")
+            if game.turn == 1 
+                println("Black Turn")
+            else
+                println("White Turn")
+            end
+            println("Enter to start choice.")
+            readline()
+        end
         try
             if game.turn == 1
-                (verbose) && (println("My turn."))
                 legals = legal(game.playerboard, game.opponetboard)
                 if legals == 0x0
                     (verbose) && (println("pass"))
@@ -33,7 +40,6 @@ function start(solver1, solver2; verbose=true)
                     (verbose) && (println("put"))
                 end
             else
-                (verbose) && (println("opponet turn."))
                 legals = legal(game.opponetboard, game.playerboard)
                 if legals == 0x0
                     (verbose) && (println("pass"))
@@ -47,12 +53,11 @@ function start(solver1, solver2; verbose=true)
                 end
             end
         catch e
-            println("invalid value:")
-            throw(e)
+            println("invalid value: $e")
             continue
         else
-            (verbose) && (display(game))
             next!(game)
+            (verbose) && (display(game))
         end
     end
     black_count = count_ones(game.playerboard)
@@ -86,9 +91,8 @@ function battle(solver1, solver2; verbose=false, N=256)
     else
         r = 1:N
     end
-
     for _ in r
-        res, _, _ = start(solver1, solver2, verbose=false)
+        res, _, _ = start_game(solver1, solver2, verbose=false)
         if res == 1
             black_win += 1
         elseif res == -1
@@ -100,26 +104,3 @@ function battle(solver1, solver2; verbose=false, N=256)
     barplot(["$(solver1)", "$(solver2)", "Draw"], [black_win, white_win, even], title="Result")
 end
 
-
-function check()
-    println("choice check")
-    solver1 = MinMax(3)
-    solver2 = AlphaBeta(3)
-    game = Game()
-    res = choice(solver2, game.playerboard, game.opponetboard, legal(game.playerboard, game.opponetboard))
-    println("choice:", res)
-    println("game check")
-    start(solver1, solver2)
-end
-
-
-function bench()
-    solvers = (AlphaBeta(4), AlphaBeta(4))
-    @time battle(solvers..., verbose=true, N=10)
-
-    solvers = (MinMax(4), MinMax(4))
-    @time battle(solvers..., verbose=true, N=10)
-
-    solvers = (ParallelMinMax(2, 8), ParallelMinMax(2, 8))
-    @time battle(solvers...)
-end
