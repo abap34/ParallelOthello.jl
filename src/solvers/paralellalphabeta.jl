@@ -47,10 +47,19 @@ function parallel_alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::
             return -parallel_alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
         else
             cand = LegalCand(_legals)
-            Threads.@threads for legal in cand
-                alpha = max(alpha, -parallel_alpha_beta(depth + 1, put(board1, board2, legal)..., -beta, -alpha, max_depth))
-                if alpha >= beta
-                    break  # beta cut-off
+            if depth == 1
+                Threads.@threads for legal in cand
+                    alpha = max(alpha, -parallel_alpha_beta(depth + 1, put(board1, board2, legal)..., -beta, -alpha, max_depth))
+                    if alpha >= beta
+                        break  # beta cut-off
+                    end
+                end
+            else
+                for legal in cand
+                    alpha = max(alpha, -parallel_alpha_beta(depth + 1, put(board1, board2, legal)..., -beta, -alpha, max_depth))
+                    if alpha >= beta
+                        break  # beta cut-off
+                    end
                 end
             end
             return alpha
@@ -65,12 +74,22 @@ function parallel_alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::
             return -parallel_alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
         else
             cand = LegalCand(_legals)
-            Threads.@threads for legal in cand
-                beta = min(beta, -parallel_alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
-                if beta <= alpha
-                    break  # alpha cut-off
+            if depth < 2
+                Threads.@threads for legal in cand
+                    beta = min(beta, -parallel_alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
+                    if beta <= alpha
+                        break 
+                    end
+                end
+            else
+                for legal in cand
+                    beta = min(beta, -parallel_alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
+                    if beta <= alpha
+                        break 
+                    end
                 end
             end
+
             return beta
         end
     end

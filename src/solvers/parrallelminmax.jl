@@ -51,8 +51,10 @@ function paralellminmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::I
             return -paralellminmax(depth + 1, board1, board2, max_depth)
         else
             cand = LegalCand(_legals)
-            for legal in cand
-                score = min(score, -minmax(depth + 1, put(board1, board2, legal)..., max_depth))
+            if depth == 1
+                for legal in cand
+                    score = min(score, -minmax(depth + 1, put(board1, board2, legal)..., max_depth))
+                end
             end
             return score
         end
