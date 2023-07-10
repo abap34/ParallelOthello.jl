@@ -65,6 +65,9 @@ function Base.iterate(cand::Base.Iterators.Enumerate{LegalCand}, prev::Tuple{Int
     end
 end
 
+function Base.firstindex(cand::LegalCand)
+    return 1
+end
 
 function Base.getindex(cand::LegalCand, i::Int)
     return TOP_BIT >> (cand.bit_idxs[i] - 1)
