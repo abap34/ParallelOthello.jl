@@ -1,8 +1,8 @@
-struct AlphaBeta <: AbstractSolver 
+struct ParallelAlphaBeta <: AbstractSolver 
     max_depth :: Int
 end
 
-function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
+function choice(solver::ParallelAlphaBeta, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
     max_depth = solver.max_depth
     cand = LegalCand(legals)
     scores = zeros(Int, length(cand))
@@ -10,7 +10,7 @@ function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt6
     best_score = -100000
     alpha = -100000 
     for (i, legal) in enumerate(cand)
-        score = -alpha_beta(1, put(board1, board2, legal)..., alpha, -alpha, max_depth)
+        score = -parallel_alpha_beta(1, put(board1, board2, legal)..., alpha, -alpha, max_depth)
         scores[i] = score
         if score > best_score
             best_score = score
@@ -27,7 +27,7 @@ function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt6
 end
 
 
-function alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::Int, beta::Int, max_depth::Int)
+function parallel_alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::Int, beta::Int, max_depth::Int)
     turn = depth % 2
     if depth == max_depth
         if turn == 1
@@ -44,11 +44,11 @@ function alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::Int, beta
         _legals = legal(board1, board2)
         # pass
         if _legals == 0x0
-            return -alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
+            return -parallel_alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
         else
             cand = LegalCand(_legals)
-            for legal in cand
-                alpha = max(alpha, -alpha_beta(depth + 1, put(board1, board2, legal)..., -beta, -alpha, max_depth))
+            Threads.@threads for legal in cand
+                alpha = max(alpha, -parallel_alpha_beta(depth + 1, put(board1, board2, legal)..., -beta, -alpha, max_depth))
                 if alpha >= beta
                     break  # beta cut-off
                 end
@@ -62,11 +62,11 @@ function alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::Int, beta
         _legals = legal(board2, board1)
         # pass
         if _legals == 0x0
-            return -alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
+            return -parallel_alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
         else
             cand = LegalCand(_legals)
-            for legal in cand
-                beta = min(beta, -alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
+            Threads.@threads for legal in cand
+                beta = min(beta, -parallel_alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
                 if beta <= alpha
                     break  # alpha cut-off
                 end
