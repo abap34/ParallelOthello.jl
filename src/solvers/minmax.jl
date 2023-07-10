@@ -64,6 +64,4 @@ function minmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int)
             return score
         end
     end
-
-    
 end

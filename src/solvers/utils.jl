@@ -30,9 +30,6 @@ mutable struct LegalCand
     end
 end
 
-# mutable struct LegalCand
-#     legals::UInt64
-# end
 
 function Base.iterate(cand::LegalCand)
     return trim_after(cand.legals), trim_after(cand.legals)
@@ -67,13 +64,6 @@ function Base.iterate(cand::Base.Iterators.Enumerate{LegalCand}, prev::Tuple{Int
         return new, new
     end
 end
-
-
-
-# function Base.firstindex(::Base.Iterators.Enumerate{LegalCand})
-#     return 1
-# end
-
 
 
 function Base.getindex(cand::LegalCand, i::Int)
