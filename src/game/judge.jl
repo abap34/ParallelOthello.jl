@@ -3,6 +3,61 @@ const NOT_BOTTOM_ROW_MASK = 0xfefefefefefefefe
 const NOT_LEFT_COL_MASK = 0x00fefefefefefefe
 const NOT_RIGHT_COL_MASK = 0xffffffffffffff00
 
+
+
+function legal(board1::UInt64, board2::UInt64)
+    mask::UInt64 = 0x0
+    for direction in ALL_DIRECTION
+        mask |= legal_eachdirection(board1, board2, direction)
+    end
+    return mask & (~(board1 | board2))
+end
+
+function islegal(position::UInt64, board1::UInt64, board2::UInt64)
+    legal_mask = legal(board1, board2)
+    return !((position & legal_mask) == 0x0)
+end
+
+function isfinish(game::Game)::Bool
+    res, state = isfinish(game.playerboard, game.opponetboard)
+    game.state = state
+    return res
+end
+
+
+function isfinish(board1::UInt64, board2::UInt64) :: Tuple{Bool, Int}
+    if ~(board1 | board2) == 0x0
+        player_count = count_ones(board1)
+        opponet_count = count_ones(board2)
+        if player_count > opponet_count
+            state = 1
+        elseif player_count < opponet_count
+            state = -1
+        else
+            state = 0
+        end
+        return true, state
+    end
+
+
+    if board1 == 0x0
+        state = -1
+        return true, state
+    elseif board2 == 0x0
+        state = 1
+        return true, state
+    end
+
+    if legal(board1, board2) == legal(board2, board1) == 0x0
+        state = 0
+        return true, state
+    end
+
+    state = 0
+    return false, state
+end
+
+
 const ALL_DIRECTION = (
     "up",
     "down",

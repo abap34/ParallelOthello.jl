@@ -4,7 +4,6 @@ using PrettyTables
 const ZERO::UInt64 = 0x0
 const TOP_BIT::UInt64 = 0b1000000000000000000000000000000000000000000000000000000000000000
 
-
 mutable struct Game
     playerboard::UInt64
     opponetboard::UInt64
@@ -34,43 +33,6 @@ mutable struct Game
 end
 
 
-function encode(board::AbstractArray)
-    s::UInt64 = 0x0
-    for (i, v) in enumerate(board)
-        if v == 1
-            s |= TOP_BIT >> (i - 1)
-        end
-    end
-    return s
-
-end
-
-function decode(board::UInt64)
-    board_bitstr = bitstring(board)
-    decoded_board = zeros(Int8, (8, 8))
-    for i in 1:64
-        if (board_bitstr[i] == '1')
-            decoded_board[i] = 1
-        end
-    end
-    return decoded_board
-end
-
-
-function legal(board1::UInt64, board2::UInt64)
-    mask::UInt64 = 0x0
-    for direction in ALL_DIRECTION
-        mask |= legal_eachdirection(board1, board2, direction)
-    end
-    return mask & (~(board1 | board2))
-end
-
-function islegal(position::UInt64, board1::UInt64, board2::UInt64)
-    legal_mask = legal(board1, board2)
-    return !((position & legal_mask) == 0x0)
-end
-
-
 function display(game::Game)
     formatter = (v, i, j) -> (
         Dict(
@@ -97,44 +59,30 @@ function display(game::Game)
     pretty_table(board, body_hlines=collect(1:8), header='a':'h', row_labels=collect(1:8), formatters=formatter)
 end
 
-function isfinish(game::Game)::Bool
-    res, state = isfinish(game.playerboard, game.opponetboard)
-    game.state = state
-    return res
-end
 
-
-function isfinish(board1::UInt64, board2::UInt64) :: Tuple{Bool, Int}
-    if ~(board1 | board2) == 0x0
-        player_count = count_ones(board1)
-        opponet_count = count_ones(board2)
-        if player_count > opponet_count
-            state = 1
-        elseif player_count < opponet_count
-            state = -1
-        else
-            state = 0
+function encode(board::AbstractArray)
+    s::UInt64 = 0x0
+    for (i, v) in enumerate(board)
+        if v == 1
+            s |= TOP_BIT >> (i - 1)
         end
-        return true, state
     end
+    return s
 
-
-    if board1 == 0x0
-        state = -1
-        return true, state
-    elseif board2 == 0x0
-        state = 1
-        return true, state
-    end
-
-    if legal(board1, board2) == legal(board2, board1) == 0x0
-        state = 0
-        return true, state
-    end
-
-    state = 0
-    return false, state
 end
+
+function decode(board::UInt64)
+    board_bitstr = bitstring(board)
+    decoded_board = zeros(Int8, (8, 8))
+    for i in 1:64
+        if (board_bitstr[i] == '1')
+            decoded_board[i] = 1
+        end
+    end
+    return decoded_board
+end
+
+
 
 function iswin(game::Game)::Bool
     return game.state == 1
@@ -160,6 +108,20 @@ function winner(game::Game)::String
 end
 
 
+function blackwin!(game::Game)
+    game.state = 1
+end
+
+function whitewin!(game::Game)
+    game.state = -1
+end
+
+function draw!(game::Game)
+    game.state = 0
+end
+
+
+
 function put!(game::Game, row::Char, col::Char)::Bool
     @assert row in '1':'8'
     @assert col in 'a':'h'
@@ -169,7 +131,6 @@ function put!(game::Game, row::Char, col::Char)::Bool
 end
 
 
-
 function put!(game::Game, row::Int, col::Int)
     ind = TOP_BIT >> (8 * (col - 1) + row - 1)
     put!(game, ind)
@@ -177,20 +138,28 @@ end
 
 function put!(game::Game, ind::UInt64)
     if game.turn == 1
-        game.playerboard, game.opponetboard = put(game.playerboard, game.opponetboard, ind)
+        game.playerboard, game.opponetboard = put(game.playerboard, game.opponetboard, ind, "black")
     else
-        game.opponetboard, game.playerboard = put(game.opponetboard, game.playerboard, ind)
+        game.playerboard, game.opponetboard  = put(game.playerboard, game.opponetboard, ind, "white")
     end
 end
 
-function put(board1::UInt64, board2::UInt64, ind::UInt64)
+function put(board1::UInt64, board2::UInt64, ind::UInt64, mode::String)
+    @assert mode in ("black", "white")
+    if mode == "white"
+        board1, board2 = board2, board1
+    end
     if islegal(ind, board1, board2)
         board1 |= ind
     else
         throw(DomainError("Illegal cell $(bitstring(ind)) $(bit_to_position(ind))"))
     end
     board1, board2 = reverse(board1, board2, ind)
-    return board1, board2
+    if mode == "black"
+        return board1, board2
+    else
+        return board2, board1
+    end
 end
 
 function reverse(board1::UInt64, board2::UInt64, ind::UInt64) :: Tuple{UInt64, UInt64}
