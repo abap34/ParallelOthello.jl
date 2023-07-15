@@ -136,9 +136,13 @@ function legal_eachdirection(board1::UInt64, board2::UInt64, direction)::UInt64
     n_shift = direction_to_shift(direction)
     board2 = trim(board2, direction)
     mask = board2 & (board1 >> n_shift)
-    for _ in 1:6
-        mask |= board2 & (mask >> n_shift)
-    end
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    
     return mask >> n_shift
 end
 
@@ -146,9 +150,12 @@ function reverse_eachdirection(ind::UInt64, board1::UInt64, board2::UInt64, dire
     n_shift = direction_to_shift(direction)
     board2 = trim(board2, direction)
     mask = board2 & (ind >> n_shift)
-    for _ in 1:6
-        mask |= board2 & (mask >> n_shift)
-    end
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
+    mask |= board2 & (mask >> n_shift)
     if ((mask >> n_shift) & board1 != 0x0)
         return mask & board2
     else
