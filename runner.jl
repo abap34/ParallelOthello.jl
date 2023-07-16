@@ -7,7 +7,7 @@ Random.seed!(34)
 include("src/ParallelOthello.jl")
 
 
-function start_game(solver1, solver2; verbose=true)
+function start_game(solver1, solver2; verbose=true, auto=false)
     game = Game()
     if verbose
         println("Start")
@@ -24,8 +24,8 @@ function start_game(solver1, solver2; verbose=true)
                 println("White Turn")
             end
             println("Enter to start choice.")
-            readline()
         end
+        (!(auto)) && (readline())
         try
             if game.turn == 1
                 legals = legal(game.playerboard, game.opponetboard)
@@ -54,6 +54,7 @@ function start_game(solver1, solver2; verbose=true)
             end
         catch e
             println("invalid value: $e")
+            throw(e)
             continue
         else
             next!(game)
@@ -103,4 +104,3 @@ function battle(solver1, solver2; verbose=false, N=256)
     end
     barplot(["$(solver1)", "$(solver2)", "Draw"], [black_win, white_win, even], title="Result")
 end
-
