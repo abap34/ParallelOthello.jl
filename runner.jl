@@ -93,7 +93,7 @@ function battle(solver1, solver2; verbose=false, N=256)
         r = 1:N
     end
     for _ in r
-        res, _, _ = start_game(solver1, solver2, verbose=false)
+        res, _, _ = start_game(solver1, solver2, verbose=false, auto=true)
         if res == 1
             black_win += 1
         elseif res == -1
