@@ -1,8 +1,8 @@
-struct AllParalellMinMax <: AbstractSolver
+struct AllParallelMinMax <: AbstractSolver
     max_depth::Int
 end
 
-function choice(solver::AllParalellMinMax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
+function choice(solver::AllParallelMinMax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
     max_depth = solver.max_depth
     cand = LegalCand(legals)
     scores = zeros(Int, length(cand))
