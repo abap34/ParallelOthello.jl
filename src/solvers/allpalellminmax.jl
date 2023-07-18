@@ -1,8 +1,8 @@
-struct AllParallelMinMax <: AbstractSolver
+struct AllParalellMinMax <: AbstractSolver
     max_depth::Int
 end
 
-function choice(solver::AllParallelMinMax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
+function choice(solver::AllParalellMinMax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
     max_depth = solver.max_depth
     cand = LegalCand(legals)
     scores = zeros(Int, length(cand))
@@ -24,12 +24,12 @@ end
 
 
 function calc(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int, i::Int) :: Tuple{Int, Int}
-    score = badparallelminmax(depth, board1, board2, max_depth)
+    score = allparallelminmax(depth, board1, board2, max_depth)
     return score, i
 end
 
 
-function badparallelminmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int)
+function allparallelminmax(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int)
     if depth == max_depth
         return count_ones(board1) - count_ones(board2)
     end
@@ -46,17 +46,17 @@ function badparallelminmax(depth::Int, board1::UInt64, board2::UInt64, max_depth
     end
 
     if _legals == 0x0
-        score = badparallelminmax(depth + 1, board1, board2, max_depth)
+        score = allparallelminmax(depth + 1, board1, board2, max_depth)
     else
         cand = LegalCand(_legals)
         if depth % 2 == 0
             tasks = map(cand) do legal
-                Threads.@spawn badparallelminmax(depth + 1, put(board1, board2, legal, "black")..., max_depth)
+                Threads.@spawn allparallelminmax(depth + 1, put(board1, board2, legal, "black")..., max_depth)
             end
             score = maximum((fetch(task)::Int for task in tasks))
         else
             tasks = map(cand) do legal
-                Threads.@spawn badparallelminmax(depth + 1, put(board1, board2, legal, "white")..., max_depth)
+                Threads.@spawn allparallelminmax(depth + 1, put(board1, board2, legal, "white")..., max_depth)
             end
             score = minimum((fetch(task)::Int for task in tasks))
         end
