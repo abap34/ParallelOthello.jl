@@ -69,7 +69,32 @@ function Base.firstindex(cand::LegalCand)
     return 1
 end
 
+function Base.lastindex(cand::LegalCand)
+    return length(cand.bit_idxs)
+end
+
+
+function trim_after(cand::LegalCand, n::Int)
+    n_shift = cand.bit_idxs[end - n]
+    return (cand.legals >> (n_shift - 1) << (n_shift - 1))
+end
+
+function trim_before(cand::LegalCand, n::Int)
+    n_shift = cand.bit_idxs[n]
+    return LegalCand((cand.legals << (n_shift - 1) >> (n_shift - 1)))
+end
+
+
+function Base.getindex(cand::LegalCand, idxs::UnitRange{Int64})
+    start = idxs.start
+    stop = idxs.stop
+    return LegalCand(trim_after(trim_before(cand, start), length(cand) - stop))
+end
+
+
 function Base.getindex(cand::LegalCand, i::Int)
     return TOP_BIT >> (cand.bit_idxs[i] - 1)
 end
+
+
 
