@@ -1,5 +1,6 @@
 using ProgressBars
 using UnicodePlots
+using OhMyREPL
 using Random
 
 Random.seed!(34)
