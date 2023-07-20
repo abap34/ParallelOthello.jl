@@ -9,7 +9,7 @@ function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt6
     hands = collect(LegalCand(legals))
     n = length(hands)
     tasks = map(1:n) do i
-        calc(1, put(board1, board2, cand[i], "black")..., max_depth, i)
+        calc(solver, 1, put(board1, board2, cand[i], "black")..., max_depth, i)
     end
     score_and_idx = (task for task in tasks)
     scores = (x -> x[1]).(score_and_idx)
@@ -23,15 +23,15 @@ function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt6
 end
 
 
-function calc(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int, i::Int) :: Tuple{Int, Int}
+function calc(::AlphaBeta, depth::Int, board1::UInt64, board2::UInt64, max_depth::Int, i::Int)::Tuple{Int,Int}
     α = -100000
     β = 100000
-    score = alphabeta(depth, board1, board2, α, β, max_depth)
+    score = parallelalphabeta(depth, board1, board2, α, β, max_depth)
     return score, i
 end
 
 
-function alphabeta(depth::Int, board1::UInt64, board2::UInt64, α::Int, β::Int, max_depth::Int)
+function parallelalphabeta(depth::Int, board1::UInt64, board2::UInt64, α::Int, β::Int, max_depth::Int)
     if depth == max_depth
         return count_ones(board1) - count_ones(board2)
     end
@@ -47,13 +47,13 @@ function alphabeta(depth::Int, board1::UInt64, board2::UInt64, α::Int, β::Int,
     end
 
     if _legals == 0x0
-        score = alphabeta(depth + 1, board1, board2, α, β, max_depth)
+        score = parallelalphabeta(depth + 1, board1, board2, α, β, max_depth)
     else
         cand = LegalCand(_legals)
         if depth % 2 == 1
             score = 100000000
             for legal in cand
-                _score = alphabeta(depth + 1, put(board1, board2, legal, "white")..., α, β, max_depth)
+                _score = parallelalphabeta(depth + 1, put(board1, board2, legal, "white")..., α, β, max_depth)
                 if _score < α
                     break
                 else
@@ -64,7 +64,7 @@ function alphabeta(depth::Int, board1::UInt64, board2::UInt64, α::Int, β::Int,
         else
             score = -10000000000
             for legal in cand
-                _score =  alphabeta(depth + 1, put(board1, board2, legal, "black")...,  α, β, max_depth)
+                _score = parallelalphabeta(depth + 1, put(board1, board2, legal, "black")..., α, β, max_depth)
                 if _score > β
                     break
                 else

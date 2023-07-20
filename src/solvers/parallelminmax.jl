@@ -1,15 +1,15 @@
-struct Parallelminmax <: AbstractSolver
+struct ParallelMinMax <: AbstractSolver
     max_depth::Int
 end
 
-function choice(solver::Parallelminmax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
+function choice(solver::ParallelMinMax, board1::UInt64, board2::UInt64, legals::UInt64)::UInt64
     max_depth = solver.max_depth
     cand = LegalCand(legals)
     scores = zeros(Int, length(cand))
     hands = collect(LegalCand(legals))
     n = length(hands)
     tasks = @inbounds map(1:n) do i
-        Threads.@spawn calc(1, put(board1, board2, cand[i], "black")..., max_depth, i)
+        Threads.@spawn calc(solver, 1, put(board1, board2, cand[i], "black")..., max_depth, i)
     end
     score_and_idx = (fetch(task)::Tuple{Int, Int} for task in tasks)
     scores = (x -> x[1]).(score_and_idx)
@@ -23,7 +23,7 @@ function choice(solver::Parallelminmax, board1::UInt64, board2::UInt64, legals::
 end
 
 
-function calc(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int, i::Int) :: Tuple{Int, Int}
+function calc(::ParallelMinMax, depth::Int, board1::UInt64, board2::UInt64, max_depth::Int, i::Int) :: Tuple{Int, Int}
     score = parallelminmax(depth, board1, board2, max_depth)
     return score, i
 end
