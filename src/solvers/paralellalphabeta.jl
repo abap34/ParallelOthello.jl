@@ -51,28 +51,57 @@ function parallelalphabeta(depth::Int, board1::UInt64, board2::UInt64, α::Int, 
     else
         cand = LegalCand(_legals)
         if depth % 2 == 1
-            score = 100000000
-            for legal in cand
-                _score = parallelalphabeta(depth + 1, put(board1, board2, legal, "white")..., α, β, max_depth)
-                if _score < α
+            first_hand = first(cand)
+            first_score = parallelalphabeta(depth + 1, put(board1, board2, first_hand, "white")..., α, β, max_depth)
+           
+            if first_score < α
+                return α
+            else
+                β = min(β, first_score)
+            end
+
+            if length(cand) == 1
+                return first_score
+            end
+
+            scores = fill(10000000, Threads.nthreads())
+            Threads.@threads for legal in cand[2:end]
+                score = parallelalphabeta(depth + 1, put(board1, board2, legal, "white")..., α, β, max_depth)
+                if score < α
                     break
                 else
-                    score = min(score, _score)
-                    β = min(β, _score)
+                    scores[Threads.threadid()] = min(scores[Threads.threadid()], score)
                 end
             end
+            return min(first_score, minimum(scores))
+
         else
-            score = -10000000000
-            for legal in cand
-                _score =  parallelalphabeta(depth + 1, put(board1, board2, legal, "black")...,  α, β, max_depth)
-                if _score > β
+            first_hand = first(cand)
+            first_score = parallelalphabeta(depth + 1, put(board1, board2, first_hand, "black")..., α, β, max_depth)
+            
+            if first_score > β
+                return β
+            else
+                α = max(α, first_score)
+            end
+
+            if length(cand) == 1
+                return first_score
+            end
+
+            scores = fill(-10000000, Threads.nthreads())
+            Threads.@threads for legal in cand[2:end]
+                score =  parallelalphabeta(depth + 1, put(board1, board2, legal, "black")...,  α, β, max_depth)
+                if score > β
                     break
                 else
-                    score = max(score, _score)
-                    α = max(α, _score)
+                    scores[Threads.threadid()] = max(scores[Threads.threadid()], score)
                 end
             end
+
+            return max(first_score, maximum(scores))
+
+            
         end
     end
-    return score
 end
