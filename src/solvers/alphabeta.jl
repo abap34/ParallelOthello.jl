@@ -6,18 +6,14 @@ function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt6
     max_depth = solver.max_depth
     cand = LegalCand(legals)
     scores = zeros(Int, length(cand))
-    hands = zeros(UInt64, length(cand))
-    best_score = -100000
-    alpha = -100000
-    for (i, legal) in enumerate(cand)
-        score = -alpha_beta(1, put(board1, board2, legal)..., alpha, -alpha, max_depth)
-        scores[i] = score
-        if score > best_score
-            best_score = score
-            alpha = score
-        end
-        hands[i] = legal
+    hands = collect(LegalCand(legals))
+    n = length(hands)
+    tasks = map(1:n) do i
+        calc(1, put(board1, board2, cand[i], "black")..., max_depth, i)
     end
+    score_and_idx = (task for task in tasks)
+    scores = (x -> x[1]).(score_and_idx)
+    hands = (x -> hands[x[2]]).(score_and_idx)
     res = choice_maximum(scores, hands)
     if res == 0x0
         throw(DomainError("zero choice. \n hands:$hands, \n scores:$scores"))
@@ -27,53 +23,56 @@ function choice(solver::AlphaBeta, board1::UInt64, board2::UInt64, legals::UInt6
 end
 
 
-function alpha_beta(depth::Int, board1::UInt64, board2::UInt64, alpha::Int, beta::Int, max_depth::Int)
-    turn = depth % 2
-    if depth == max_depth
-        if turn == 1
-            return count_ones(board1) - count_ones(board2)
-        else
-            return count_ones(board2) - count_ones(board1)
-        end
-    end
-
-    if turn == 1
-        if isfinish(board1, board2)[1]
-            return count_ones(board1) - count_ones(board2)
-        end
-        _legals = legal(board1, board2)
-        # pass
-        if _legals == 0x0
-            return -alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
-        else
-            cand = LegalCand(_legals)
-            for legal in cand
-                alpha = max(alpha, -alpha_beta(depth + 1, put(board1, board2, legal)..., -beta, -alpha, max_depth))
-                if alpha >= beta
-                    break  # beta cut-off
-                end
-            end
-            return alpha
-        end
-    else
-        if isfinish(board1, board2)[1]
-            return count_ones(board2) - count_ones(board1)
-        end
-        _legals = legal(board2, board1)
-        # pass
-        if _legals == 0x0
-            return -alpha_beta(depth + 1, board1, board2, -beta, -alpha, max_depth)
-        else
-            cand = LegalCand(_legals)
-            for legal in cand
-                beta = min(beta, -alpha_beta(depth + 1, put(board2, board1, legal)..., -beta, -alpha, max_depth))
-                if beta <= alpha
-                    break  # alpha cut-off
-                end
-            end
-            return beta
-        end
-    end
+function calc(depth::Int, board1::UInt64, board2::UInt64, max_depth::Int, i::Int) :: Tuple{Int, Int}
+    α = -100000
+    β = 100000
+    score = alphabeta(depth, board1, board2, α, β, max_depth)
+    return score, i
 end
 
 
+function alphabeta(depth::Int, board1::UInt64, board2::UInt64, α::Int, β::Int, max_depth::Int)
+    if depth == max_depth
+        return count_ones(board1) - count_ones(board2)
+    end
+
+    if isfinish(board1, board2)[1]
+        return count_ones(board1) - count_ones(board2)
+    end
+
+    if depth % 2 == 0
+        _legals = legal(board1, board2)
+    else
+        _legals = legal(board2, board1)
+    end
+
+    if _legals == 0x0
+        score = alphabeta(depth + 1, board1, board2, α, β, max_depth)
+    else
+        cand = LegalCand(_legals)
+        if depth % 2 == 1
+            score = 100000000
+            for legal in cand
+                _score = alphabeta(depth + 1, put(board1, board2, legal, "white")..., α, β, max_depth)
+                if _score < α
+                    break
+                else
+                    score = min(score, _score)
+                    β = min(β, _score)
+                end
+            end
+        else
+            score = -10000000000
+            for legal in cand
+                _score =  alphabeta(depth + 1, put(board1, board2, legal, "black")...,  α, β, max_depth)
+                if _score > β
+                    break
+                else
+                    score = max(score, _score)
+                    α = max(α, _score)
+                end
+            end
+        end
+    end
+    return score
+end
