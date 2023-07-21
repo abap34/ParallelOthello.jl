@@ -2,26 +2,26 @@
 
 ```
 .
-├── ParallelOthello.jl
-│   ├── Manifest.toml       # Julia言語の仮想環境を管理するファイル
-│   ├── Project.toml        # Julia言語の仮想環境を管理するファイル
-│   ├── runner.jl           # ゲームを実行するファイル
-│   └── src
-│       ├── ParallelOthello.jl  # パッケージの全体を管理する
-│       ├── game
-│       │   ├── game.jl       # ゲーム全体を管理する
-│       │   └── judge.jl      # 反転や合法手などを管理する
-│       └── solvers
-│           ├── alphabeta.jl  # アルファベータ法
-│           ├── firstchoice.jl  # 一番左下にある手を返す
-│           ├── minmax.jl     # ミニマックス法
-│           ├── paralellalphabeta.jl  # 並列化したアルファベータ法
-│           ├── parrallelminmax.jl    # 並列化したミニマックス法
-│           ├── random.jl     # ランダムに手を返す
-│           ├── solvers.jl    # ソルバー全体を管理する
-│           └── utils.jl      # ソルバーのユーティリティ
+ParallelOthello.jl/
+├── Manifest.toml
+├── Project.toml
 ├── README.md
-└── report.pdf
+├── runner.jl
+└── src
+    ├── ParallelOthello.jl
+    ├── game
+    │   ├── game.jl
+    │   └── judge.jl
+    └── solvers
+        ├── alphabeta.jl
+        ├── firstchoice.jl
+        ├── human.jl
+        ├── minmax.jl
+        ├── paralellalphabeta.jl
+        ├── parallelminmax.jl
+        ├── random.jl
+        ├── solvers.jl
+        └── utils.jl
 ```
 
 
@@ -44,7 +44,7 @@ RandomChoice()
 julia> solver2 = RandomChoice()
 RandomChoice()
 
-julia> start_game(solver1, solver2) # 対戦スタート
+julia> start_game(solver1, solver2, auto=true) # 対戦スタート
 Start
 ┌───┬────┬────┬────┬────┬────┬────┬────┬────┐
 │   │  a │  b │  c │  d │  e │  f │  g │  h │

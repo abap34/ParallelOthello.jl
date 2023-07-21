@@ -85,6 +85,7 @@ end
 
 
 function battle(solver1, solver2; verbose=false, N=256)
+    Random.seed!(0)
     black_win = 0
     white_win = 0
     even = 0
